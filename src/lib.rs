@@ -1,45 +1,20 @@
-#[derive(Debug)]
-pub struct Item {
-    name: String,
-    price: f32,
-    discount: f32,
-    pay_percentage: u8
-}
+mod item;
+mod receipt;
 
-impl Item {
-    pub fn new(name: String, price: f32, discount: f32, pay_percentage: u8) -> Item {
-        Item {
-            name,
-            price,
-            discount,
-            pay_percentage
+use item::Item;
+use receipt::Receipt;
+
+fn create_receipt(paid_by: &str, items:Option<Vec<Item>>) -> Receipt {
+    match items {
+        None => Receipt::new(paid_by.to_owned()),
+        Some(i) => {
+            let mut receipt = Receipt::new(paid_by.to_owned());
+            receipt.add_items(i);
+            receipt
         }
     }
 }
 
-#[derive(Debug)]
-pub struct Receipt {
-    paid_by: String,
-    items: Vec<Item>,
-    subtotal: f32
-}
-
-impl Receipt {
-    pub fn new(paid_by: String) -> Receipt {
-        Receipt { paid_by, items: vec![], subtotal: 0.0 }
-    }
-
-    pub fn add_item(&mut self, item:Item) {
-        self.items.push(item);
-    }
-
-    pub fn set_owner(&mut self, name:String) {
-        self.paid_by = name;
-    }
-
-    pub fn calc_subtotal(&mut self) {
-        for item in &self.items {
-            self.subtotal += item.price;
-        }
-    }
+fn create_item(name:&str, price:f32, discount:Option<f32>, contributors:Vec<String>) -> Item {
+    Item::new(name.to_owned(), price, discount, contributors)
 }
