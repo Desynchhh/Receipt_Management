@@ -1,20 +1,16 @@
+use std::io;
+
 mod item;
 mod receipt;
+mod contributors;
 
-use item::Item;
-use receipt::Receipt;
+pub fn get_user_input(query:&str, buffer:&mut String) -> String {
+    println!("{}", query);
+    let result = io::stdin().read_line(buffer);
 
-fn create_receipt(paid_by: &str, items:Option<Vec<Item>>) -> Receipt {
-    match items {
-        None => Receipt::new(paid_by.to_owned()),
-        Some(i) => {
-            let mut receipt = Receipt::new(paid_by.to_owned());
-            receipt.add_items(i);
-            receipt
-        }
+    if result.is_err() {
+        panic!("{:?}", result.err());
     }
-}
 
-fn create_item(name:&str, price:f32, discount:Option<f32>, contributors:Vec<String>) -> Item {
-    Item::new(name.to_owned(), price, discount, contributors)
+    buffer.trim().to_owned()
 }

@@ -1,13 +1,15 @@
+use super::contributors::Contributors;
+
 #[derive(Debug, PartialEq)]
 pub struct Item {
     name: String,
     pub price: f32,
     pub discount: Option<f32>,
-    pub contributors: Vec<String>,
+    pub contributors: Contributors,
 }
 
 impl Item {
-    pub fn new(name: String, price: f32, discount:Option<f32>, contributors: Vec<String>) -> Item {
+    pub fn new(name: String, price: f32, discount:Option<f32>, contributors: Contributors) -> Item {
         Item {
             name,
             discount,
@@ -28,14 +30,14 @@ mod tests {
             name: String::from("Milk"),
             price: 12.95,
             discount: None,
-            contributors: vec![String::from("Mikkel"), String::from("Thea")],
+            contributors: Contributors::new("Mikkel, Thea"),
         };
 
         let constructor_item = Item::new(
             String::from("Milk"),
             12.95,
             None,
-            vec![String::from("Mikkel"), String::from("Thea")]
+            Contributors::new("Mikkel, Thea")
         );
 
         assert_eq!(manuel_item, constructor_item);
