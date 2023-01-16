@@ -1,8 +1,8 @@
 use std::io;
 
-mod item;
-mod receipt;
-mod contributors;
+pub mod item;
+pub mod receipt;
+pub mod contributors;
 
 pub fn get_user_input(query:&str, buffer:&mut String) -> String {
     println!("{}", query);
