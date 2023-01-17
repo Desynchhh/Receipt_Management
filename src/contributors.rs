@@ -14,6 +14,10 @@ impl Contributors {
         Contributors { names: vec }
     }
 
+    pub fn from_vector(names:Vec<String>) -> Contributors {
+        Contributors { names }
+    }
+
 
     pub fn to_string(&self) -> String {
         let mut string = String::from("[");
@@ -26,6 +30,18 @@ impl Contributors {
         string.push(']');
 
         string
+    }
+
+    pub fn from_contributor_marking(marking:&str, receipt_contributors:&Contributors) -> Contributors {
+        let mut vec:Vec<String> = Vec::new();
+
+        for (i, char) in marking.to_lowercase().chars().enumerate() {
+            if char == 'x' {
+                vec.push(receipt_contributors.names[i].clone());
+            }
+        }
+
+        Contributors { names: vec }
     }
 }
 

@@ -1,15 +1,15 @@
 use super::contributors::Contributors;
 
 #[derive(Debug, PartialEq)]
-pub struct Item<'a> {
+pub struct Item {
     name: String,
     pub price: f32,
     pub discount: Option<f32>,
-    pub contributors: &'a Contributors,
+    pub contributors: Contributors,
 }
 
-impl<'a> Item<'a> {
-    pub fn new(name: String, price: f32, discount:Option<f32>, contributors: &'a Contributors) -> Item {
+impl Item {
+    pub fn new(name: String, price: f32, discount:Option<f32>, contributors: Contributors) -> Item {
         Item {
             name,
             discount,

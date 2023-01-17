@@ -1,4 +1,5 @@
-use receipt_management::*;
+extern crate receipt_management;
+use receipt_management::{*, contributors::Contributors};
 use chrono;
 
 const QUIT_COMMAND: &str = "/quit";
@@ -94,17 +95,23 @@ fn new_receipt() {
         } else {
             Some(discount.parse().unwrap())
         };
-        
-        let item = item::Item::new(name, price, discount, &contributors);
-        receipt.add_item(item);
-    }
-    println!("{:?}", receipt);
 
-    for contributor in &contributors.names {
-        if contributor.eq(&paid_by) {
-            continue;
-        }
-        let money_owed = receipt.calc_contributor_payment(&contributor);
-        println!("{} owes {} to {} for the receipt.", &contributor, money_owed, &paid_by);
+        input.clear();
+        println!("{}", contributors.to_string());
+        let msg = format!("Mark contributors for item {} with 'x', and non-contributors with 'o'.", &item_number);
+        let contributor_marking = get_user_input(&msg, &mut input);
+
+        let item_contributors = Contributors::from_contributor_marking(&contributor_marking, &contributors);
+        let item = item::Item::new(name, price, discount, item_contributors);
+        receipt.add_item(item);
+
+        item_number += 1;
     }
+    println!("\n\n{:#?}\n", receipt);
+    
+    for contributor in contributors.names.iter().filter(|c| c.as_str() != paid_by) {
+        let owed = receipt.calc_contributor_payment(&contributor);
+        println!("{} owes {:.2} to {} for the receipt.", contributor, owed, paid_by);
+    }
+    println!();
 }
