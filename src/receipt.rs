@@ -1,28 +1,31 @@
 use super::item::Item;
-use chrono::{ NaiveDate };
+use chrono;
+use serde_derive::{Serialize, Deserialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Receipt {
     store: String,
-    date: NaiveDate,
+    date: String,
     paid_by: String,
     pub items: Vec<Item>,
+    subtotal: f32,
 }
 
 impl Receipt {
     pub fn new(
         paid_by:&str,
         store:&str,
-        date:Option<NaiveDate>,
+        date:Option<String>,
         items:Option<Vec<Item>>
     ) -> Receipt {
-        let today = chrono::Local::now().naive_local().date();
+        let today = chrono::Local::now().naive_local().date().to_string();
 
         let mut receipt = Receipt { 
             paid_by: paid_by.to_owned(),
             store: store.to_owned(),
             date:today,
-            items:vec![]
+            items:vec![],
+            subtotal: 0.0
         };
 
         if items.is_some() {
@@ -37,7 +40,7 @@ impl Receipt {
     }
 
 
-    pub fn set_date(&mut self, date:NaiveDate) {
+    pub fn set_date(&mut self, date:String) {
         self.date = date;
     }
 
@@ -51,6 +54,13 @@ impl Receipt {
         self.items.push(item);
     }
 
+    pub fn calc_subtotal(&mut self) {
+        let mut total = 0.0;
+        for item in &self.items {
+            total += item.calc_paid();
+        }
+        self.subtotal = total;
+    }
 
     pub fn calc_contributor_payment(&self, contributor:&str) -> f32 {
         let items = self.items

@@ -1,6 +1,7 @@
 pub mod item;
 pub mod receipt;
 pub mod contributors;
+mod file_manager;
 mod input_handler;
 
 pub const QUIT_COMMAND: &str = "/quit";
@@ -47,7 +48,6 @@ pub fn new_receipt() {
     let date = input_handler::get_date_from_input();
 
     let mut receipt = receipt::Receipt::new(&paid_by, &store, date, None);
-
     println!("{:?}", receipt);
     
     let mut item_number:u32 = 1;
@@ -60,6 +60,7 @@ pub fn new_receipt() {
         item_number += 1;
     }
     println!("\n\n{:#?}\n", receipt);
+    file_manager::receipt_to_json(&receipt);
     
     for contributor in contributors.names.iter().filter(|c| c.as_str() != paid_by) {
         let owed = receipt.calc_contributor_payment(&contributor);

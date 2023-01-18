@@ -1,6 +1,7 @@
+use serde_derive::{Serialize, Deserialize};
 use super::contributors::Contributors;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Item {
     name: String,
     pub price: f32,
@@ -15,6 +16,13 @@ impl Item {
             discount,
             price,
             contributors: contributors,
+        }
+    }
+
+    pub fn calc_paid(&self) -> f32 {
+        match self.discount {
+            None => self.price,
+            Some(discount) => self.price - discount
         }
     }
 }

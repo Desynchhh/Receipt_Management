@@ -1,4 +1,6 @@
-#[derive(Debug, PartialEq)]
+use serde_derive::{Serialize, Deserialize};
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Contributors {
     pub names: Vec<String>
 }

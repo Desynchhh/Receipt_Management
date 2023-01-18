@@ -34,14 +34,15 @@ pub fn get_contributors_from_input(paid_by:&str) -> contributors::Contributors {
 }
 
 
-pub fn get_date_from_input() -> Option<chrono::NaiveDate> {
+pub fn get_date_from_input() -> Option<String> {
     let mut date = String::new();
     let date = get_user_input("Enter date for purchase (YYYY-MM-DD). Leave blank for today.", &mut date);
     if !date.is_empty() {
         let ymd: Vec<u32> = date.split('-')
             .map(|d| d.parse().unwrap())
             .collect();
-        chrono::NaiveDate::from_ymd_opt(ymd[0] as i32, ymd[1], ymd[2])
+        let receipt_date = chrono::NaiveDate::from_ymd_opt(ymd[0] as i32, ymd[1], ymd[2]);
+        Some(receipt_date.unwrap().to_string())
     } else {
         None
     }
