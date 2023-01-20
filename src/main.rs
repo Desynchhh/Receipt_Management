@@ -3,7 +3,6 @@ use receipt_management::*;
 fn main() {
     loop {
         let command = receipt_management::get_command_from_input();
-        println!("current command is: {}", command);
 
         match command.as_str() {
             QUIT_COMMAND => {

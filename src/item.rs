@@ -1,21 +1,20 @@
 use serde_derive::{Serialize, Deserialize};
-use super::contributors::Contributors;
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Item {
-    name: String,
+    pub name: String,
     pub price: f32,
     pub discount: Option<f32>,
-    pub contributors: Contributors,
+    pub contributors: Vec<String>,
 }
 
 impl Item {
-    pub fn new(name: String, price: f32, discount:Option<f32>, contributors: Contributors) -> Item {
+    pub fn new(name: String, price: f32, discount:Option<f32>, contributors: Vec<String>) -> Item {
         Item {
             name,
             discount,
             price,
-            contributors: contributors,
+            contributors,
         }
     }
 

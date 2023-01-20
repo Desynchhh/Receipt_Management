@@ -1,5 +1,5 @@
 use std::io;
-use super::{contributors, QUIT_COMMAND};
+use super::{QUIT_COMMAND};
 
 pub fn get_user_input(query:&str, buffer:&mut String) -> String {
     println!("{}", query);
@@ -25,12 +25,20 @@ pub fn get_paid_by_from_input() -> String {
 }
 
 
-pub fn get_contributors_from_input(paid_by:&str) -> contributors::Contributors {
+pub fn get_contributors_from_input(paid_by:&str) -> Vec<String> {
+    let mut vec:Vec<String> = Vec::new();
     let mut contributors = String::new();
+    
     let mut contributors = get_user_input("Write each person who contributed to the receipt in a comma separated list, not including yourself (e.g.: John, Jane, Jim)", &mut contributors);
+
     contributors.push_str(", ");
     contributors.push_str(&paid_by);
-    contributors::Contributors::new(&contributors)
+
+    for contributor in contributors.split(',') {
+        vec.push(contributor.trim().to_owned());
+    }
+
+    vec
 }
 
 
@@ -80,10 +88,10 @@ pub fn get_discount_from_input(item_number:&u32) -> Option<f32> {
 }
 
 
-pub fn get_contributor_marking_from_input(item_number:&u32, contributors:&contributors::Contributors) -> String {
+pub fn get_contributor_marking_from_input(item_number:&u32, contributors:&Vec<String>) -> String {
     let mut input = String::new();
 
-    println!("{}", &contributors.to_string());
+    println!("{:?}", contributors);
     let msg = format!("Mark contributors for item {} with 'x', and non-contributors with 'o'.", &item_number);
     get_user_input(&msg, &mut input)
 }

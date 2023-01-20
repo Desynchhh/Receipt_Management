@@ -1,14 +1,17 @@
 use super::item::Item;
 use chrono;
 use serde_derive::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Receipt {
-    store: String,
-    date: String,
-    paid_by: String,
+    pub store: String,
+    pub date: String,
+    pub paid_by: String,
     pub items: Vec<Item>,
-    subtotal: f32,
+    pub subtotal: f32,
+    pub contributor_to_pay: HashMap<String, f32>
 }
 
 impl Receipt {
@@ -25,7 +28,8 @@ impl Receipt {
             store: store.to_owned(),
             date:today,
             items:vec![],
-            subtotal: 0.0
+            subtotal: 0.0,
+            contributor_to_pay: HashMap::new(),
         };
 
         if items.is_some() {
@@ -62,18 +66,20 @@ impl Receipt {
         self.subtotal = total;
     }
 
-    pub fn calc_contributor_payment(&self, contributor:&str) -> f32 {
+    pub fn calc_contributor_payment(&mut self, contributor:&str) -> f32 {
         let items = self.items
             .iter()
-            .filter(|item| item.contributors.names.contains(&contributor.to_owned()));
+            .filter(|item| item.contributors.contains(&contributor.to_owned()));
 
         let mut owed = 0.0;
         for item in items {
             owed += match item.discount {
-                None => item.price / item.contributors.names.len() as f32,
-                Some(d) => (item.price - d) / item.contributors.names.len() as f32
+                None => item.price / item.contributors.len() as f32,
+                Some(d) => (item.price - d) / item.contributors.len() as f32
             }
         }
+
+        self.contributor_to_pay.insert(contributor.to_string(), owed);
         owed
     }
 }
@@ -82,7 +88,6 @@ impl Receipt {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::contributors::Contributors;
 
     #[test]
     fn contributor_payment_without_discount() {
@@ -92,19 +97,19 @@ mod tests {
                 String::from("Milk"),
                 10.0,
                 None,
-                Contributors::new("Mikkel, Thea"),
+                vec!["Mikkel".to_string(), "Thea".to_string()],
             ),
             Item::new(
                 String::from("White chocolate"),
                 10.0,
                 None,
-                Contributors::new("Thea"),
+                vec!["Thea".to_string()],
             ),
             Item::new(
                 String::from("Chips"),
                 20.0,
                 None,
-                Contributors::new("Mikkel"),
+                vec!["Mikkel".to_string()],
             ),
         ]);
 
@@ -122,13 +127,13 @@ mod tests {
                 String::from("Milk"),
                 12.0,
                 Some(2.0),
-                Contributors::new("Mikkel, Thea"),
+                vec!["Mikkel".to_string(), "Thea".to_string()],
             ),
             Item::new(
                 String::from("White chocolate"),
                 20.0,
                 Some(5.0),
-                Contributors::new("Thea"),
+                vec!["Thea".to_string()],
             ),
         ]);
 
@@ -146,13 +151,13 @@ mod tests {
                 String::from("Milk"),
                 12.0,
                 None,
-                Contributors::new("Mikkel, Thea"),
+                vec!["Mikkel".to_string(), "Thea".to_string()],
             ),
             Item::new(
                 String::from("White chocolate"),
                 20.0,
                 Some(5.0),
-                Contributors::new("Thea"),
+                vec!["Thea".to_string()],
             ),
         ]);
 
@@ -171,13 +176,13 @@ mod tests {
                 String::from("Milk"),
                 12.0,
                 Some(0.0),
-                Contributors::new("Mikkel, Thea"),
+                vec!["Mikkel".to_string(), "Thea".to_string()],
             ),
             Item::new(
                 String::from("White chocolate"),
                 20.0,
                 Some(5.0),
-                Contributors::new("Thea"),
+                vec!["Thea".to_string()],
             ),
         ]);
 
@@ -196,13 +201,13 @@ mod tests {
                 String::from("Milk"),
                 12.95,
                 None,
-                Contributors::new("Mikkel, Thea"),
+                vec!["Mikkel".to_string(), "Thea".to_string()],
             ),
             Item::new(
                 String::from("White chocolate"),
                 19.95,
                 None,
-                Contributors::new("Mikkel, Thea"),
+                vec!["Mikkel".to_string(), "Thea".to_string()],
             ),
         ]);
 
@@ -213,13 +218,13 @@ mod tests {
                     String::from("Milk"),
                     12.95,
                     None,
-                    Contributors::new("Mikkel, Thea")
+                    vec!["Mikkel".to_string(), "Thea".to_string()]
                 ),
                 Item::new(
                     String::from("White chocolate"),
                     19.95,
                     None,
-                    Contributors::new("Mikkel, Thea")
+                    vec!["Mikkel".to_string(), "Thea".to_string()]
                 )
             ]
         );
@@ -233,7 +238,7 @@ mod tests {
             String::from("Mikkel"),
             12.95,
             None,
-            Contributors::new("Mikkel, Thea"),
+            vec!["Mikkel".to_string(), "Thea".to_string()],
         ));
 
         assert_eq!(
@@ -242,7 +247,7 @@ mod tests {
                 String::from("Mikkel"),
                 12.95,
                 None,
-                Contributors::new("Mikkel, Thea")
+                vec!["Mikkel".to_string(), "Thea".to_string()]
             )]
         )
     }

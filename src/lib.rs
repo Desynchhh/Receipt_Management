@@ -1,6 +1,5 @@
 pub mod item;
 pub mod receipt;
-pub mod contributors;
 mod file_manager;
 mod input_handler;
 
@@ -12,7 +11,7 @@ pub fn get_command_from_input() -> String {
 }
 
 
-fn new_item(item_number:&u32, contributors:&contributors::Contributors) -> Option<item::Item> {
+fn new_item(item_number:&u32, contributors:&Vec<String>) -> Option<item::Item> {
     let name = input_handler::get_item_name_from_input(&item_number);
     if name.eq(QUIT_COMMAND) {
         return None;
@@ -31,12 +30,12 @@ fn new_item(item_number:&u32, contributors:&contributors::Contributors) -> Optio
         return None;
     }
 
-    let contributor_marking = input_handler::get_contributor_marking_from_input(&item_number, &contributors);
+    let contributor_marking = input_handler::get_contributor_marking_from_input(&item_number, contributors);
     if contributor_marking.eq(QUIT_COMMAND) {
         return None;
     }
 
-    let item_contributors = contributors::Contributors::from_contributor_marking(&contributor_marking, &contributors);
+    let item_contributors = from_contributor_marking(&contributor_marking, contributors);
     Some(item::Item::new(name, price, discount, item_contributors))
 }
 
@@ -59,12 +58,28 @@ pub fn new_receipt() {
         receipt.add_item(item.unwrap());
         item_number += 1;
     }
-    println!("\n\n{:#?}\n", receipt);
-    file_manager::receipt_to_json(&receipt);
+    receipt.calc_subtotal();
     
-    for contributor in contributors.names.iter().filter(|c| c.as_str() != paid_by) {
-        let owed = receipt.calc_contributor_payment(&contributor);
+    
+    for contributor in contributors.iter() {
+        let owed = receipt.calc_contributor_payment(contributor);
         println!("{} owes {:.2} to {} for the receipt.", contributor, owed, paid_by);
     }
+
+    file_manager::receipt_to_json(&receipt);
+    println!("\n\n{:#?}\n", receipt);
     println!();
+}
+
+
+fn from_contributor_marking(marking:&str, receipt_contributors:&Vec<String>) -> Vec<String> {
+    let mut vec:Vec<String> = Vec::new();
+
+    for (i, char) in marking.to_lowercase().chars().enumerate() {
+        if char == 'x' {
+            vec.push(receipt_contributors[i].clone());
+        }
+    }
+
+    vec
 }
