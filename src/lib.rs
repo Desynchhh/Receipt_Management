@@ -1,3 +1,5 @@
+use serde_json;
+
 pub mod item;
 pub mod receipt;
 mod file_manager;
@@ -5,6 +7,8 @@ mod input_handler;
 
 pub const QUIT_COMMAND: &str = "/quit";
 pub const NEW_RECEIPT_COMMAND: &str = "/new";
+const BASE_API_URL:&str = "http://192.168.1.126/receipts/api";
+// const BASE_API_URL:&str = "http://localhost:8080/receipts/api";
 
 pub fn get_command_from_input() -> String {
     input_handler::get_command_from_input()
@@ -65,9 +69,16 @@ pub fn new_receipt() {
         let owed = receipt.calc_contributor_payment(contributor);
         println!("{} owes {:.2} to {} for the receipt.", contributor, owed, paid_by);
     }
-
+    
     file_manager::receipt_to_json(&receipt);
     println!("\n\n{:#?}\n", receipt);
+    println!();
+    let post_result = post_receipt(&receipt);
+    if post_result.is_ok() {
+        println!("Receipt posted to server successfully!\n{:?}", post_result.ok());
+    } else {
+        println!("Post to server failed.\n{:?}", post_result.err());
+    }
     println!();
 }
 
@@ -82,4 +93,11 @@ fn from_contributor_marking(marking:&str, receipt_contributors:&Vec<String>) -> 
     }
 
     vec
+}
+
+fn post_receipt(receipt:&receipt::Receipt) -> Result<(), reqwest::Error> {
+    let json_string = serde_json::to_string(receipt).ok().unwrap();
+    let client = reqwest::blocking::Client::new();
+    client.post(BASE_API_URL).header("Content-Type", "application/json").body(json_string).send()?;
+    Ok(())
 }
